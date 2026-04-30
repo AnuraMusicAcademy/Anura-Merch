@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anura Music Academy — Merch Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d0d; --surface: #161616; --surface2: #1e1e1e;
+  --border: #2a2a2a; --border2: #383838;
+  --text: #f0ece4; --text2: #9a9690; --text3: #5a5753;
+  --accent: #c8a96e; --accent2: #a07c3e;
+  --given: #2a7a4a; --given-bg: #0d2a1a;
+  --notg: #7a2a2a; --notg-bg: #2a0d0d;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+.hdr{padding:1.2rem 1.5rem 0.8rem;border-bottom:0.5px solid var(--border);}
+.hdr-logo{font-family:'Cormorant Garamond',serif;font-size:0.9rem;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;}
+.hdr-title{font-size:1.5rem;font-family:'Cormorant Garamond',serif;font-weight:400;}
+.hdr-sub{font-size:0.75rem;color:var(--text3);margin-top:1px;}
+.prog{display:flex;padding:0.7rem 1.5rem;gap:5px;}
+.pd{height:2px;flex:1;border-radius:2px;background:var(--border);transition:background 0.3s;}
+.pd.done{background:var(--accent);}
+.pd.active{background:var(--accent2);}
+.content{flex:1;padding:1.2rem 1.5rem 2rem;max-width:680px;width:100%;margin:0 auto;}
+.slbl{font-size:0.68rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-bottom:0.5rem;}
+.stitle{font-size:1.4rem;font-family:'Cormorant Garamond',serif;font-weight:400;margin-bottom:0.2rem;}
+.ssub{font-size:0.82rem;color:var(--text2);margin-bottom:1.3rem;}
+
+/* NAV TABS */
+.tabs{display:flex;gap:0;border-bottom:0.5px solid var(--border);margin-bottom:1.5rem;}
+.tab{padding:0.6rem 1.2rem;font-size:0.82rem;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;}
+.tab:hover{color:var(--text2);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* TEACHER */
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:1.3rem;}
+.tcard{background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:0.9rem;cursor:pointer;transition:all 0.15s;}
+.tcard:hover,.tcard.sel{border-color:var(--accent);background:#1e1a12;}
+.tcard h3{font-family:'Cormorant Garamond',serif;font-size:0.95rem;color:var(--text);font-weight:400;}
+.tcard p{font-size:0.7rem;color:var(--text3);margin-top:2px;}
+.tcard .cnt{font-size:0.65rem;color:var(--accent2);margin-top:5px;}
+
+/* STUDENT */
+.ssearch{width:100%;background:var(--surface);border:0.5px solid var(--border2);color:var(--text);font-size:0.85rem;padding:9px 12px;border-radius:8px;margin-bottom:0.8rem;font-family:'DM Sans',sans-serif;}
+.ssearch:focus{outline:none;border-color:var(--accent2);}
+.ssearch::placeholder{color:var(--text3);}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:7px;margin-bottom:1.3rem;max-height:50vh;overflow-y:auto;padding-right:4px;}
+.sgrid::-webkit-scrollbar{width:3px;}
+.sgrid::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.scard{background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:0.65rem 0.85rem;cursor:pointer;transition:all 0.13s;display:flex;align-items:center;gap:8px;}
+.scard:hover,.scard.sel{border-color:var(--accent);background:#1e1a12;}
+.av{width:26px;height:26px;border-radius:50%;background:#1e1a12;border:0.5px solid var(--accent2);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--accent);flex-shrink:0;font-weight:500;}
+.scard span{font-size:0.8rem;color:var(--text);line-height:1.3;}
+
+/* MERCH */
+.mcat{margin-bottom:1.5rem;}
+.mcat-t{font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);padding-bottom:6px;border-bottom:0.5px solid var(--border);margin-bottom:0.8rem;}
+.mlist{display:flex;flex-direction:column;gap:7px;}
+.mitem{border-radius:10px;border:0.5px solid var(--border);background:var(--surface);transition:border-color 0.15s;}
+.mitem.pkg{border-color:#1a3a5a;background:#0a1a2a;}
+.mitem.given{border-color:var(--given);background:var(--given-bg);}
+.mitem.notg{border-color:var(--notg);background:var(--notg-bg);}
+.minner{display:flex;align-items:center;gap:10px;padding:0.7rem 0.9rem;}
+.mimg{width:50px;height:50px;object-fit:contain;border-radius:6px;background:#111;flex-shrink:0;}
+.mph{width:50px;height:50px;border-radius:6px;background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
+.minfo{flex:1;min-width:0;}
+.mname{font-size:0.85rem;color:var(--text);}
+.mstat{font-size:0.7rem;margin-top:2px;}
+.mitem.given .mstat{color:#6aba8a;}
+.mitem.notg .mstat{color:#ba6a6a;}
+.mitem.pkg .mstat{color:#6aaaba;}
+.mbtns{display:flex;gap:5px;flex-shrink:0;}
+.bg{background:var(--given);color:#a0f0c0;border:none;padding:5px 10px;border-radius:5px;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.bg:hover{background:#3a9a5a;}
+.bn{background:var(--notg);color:#f0a0a0;border:none;padding:5px 10px;border-radius:5px;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.bn:hover{background:#9a3a3a;}
+.bc{background:var(--surface2);color:var(--text3);border:0.5px solid var(--border2);padding:5px 8px;border-radius:5px;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.srow{padding:0 0.9rem 0.7rem;display:none;}
+.mitem.given .srow,.mitem.notg .srow{display:block;}
+.slb{font-size:0.65rem;color:var(--text3);margin-bottom:4px;}
+.sbts{display:flex;flex-wrap:wrap;gap:4px;}
+.sbt{background:var(--surface2);border:0.5px solid var(--border2);color:var(--text2);padding:3px 9px;border-radius:4px;font-size:0.72rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.sbt:hover{border-color:var(--accent2);}
+.sbt.sel{background:#1e1a12;border-color:var(--accent);color:var(--accent);}
+.pkgbdg{background:#1a3a5a;color:#6aaaba;font-size:0.6rem;padding:2px 6px;border-radius:20px;margin-left:5px;}
+
+/* SUMMARY */
+.scard2{background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:1.1rem;margin-bottom:1.1rem;}
+.sr{display:flex;justify-content:space-between;padding:5px 0;font-size:0.83rem;border-bottom:0.5px solid var(--border);}
+.sr:last-child{border:none;}
+.sl{color:var(--text2);} .sv{color:var(--text);}
+.si{margin-top:0.8rem;}
+.sg{color:#6aba8a;font-size:0.78rem;padding:2px 0;}
+.sng{color:#ba6a6a;font-size:0.78rem;padding:2px 0;}
+.ss{font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3);margin:7px 0 3px;}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:1rem;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:0.6rem 1.3rem;border-radius:7px;font-size:0.83rem;cursor:pointer;border:0.5px solid var(--border2);transition:all 0.13s;font-family:'DM Sans',sans-serif;}
+.btn-p{background:var(--accent);color:#0d0d0d;border-color:var(--accent);font-weight:500;}
+.btn-p:hover{background:#d4b87a;}
+.btn-p:disabled{background:var(--surface2);color:var(--text3);border-color:var(--border);cursor:not-allowed;}
+.btn-o{background:transparent;color:var(--text2);}
+.btn-o:hover{color:var(--text);}
+
+/* DASHBOARD */
+.db-teacher-sel{margin-bottom:1.5rem;}
+.db-tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:7px;margin-bottom:1rem;}
+.db-tc{background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:0.75rem;cursor:pointer;transition:all 0.13s;}
+.db-tc:hover,.db-tc.sel{border-color:var(--accent);background:#1e1a12;}
+.db-tc h3{font-size:0.82rem;color:var(--text);font-family:'Cormorant Garamond',serif;font-weight:400;}
+.db-tc p{font-size:0.68rem;color:var(--text3);margin-top:2px;}
+
+.db-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.3rem;}
+.db-stat{background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:0.8rem;text-align:center;}
+.db-stat .num{font-size:1.6rem;font-family:'Cormorant Garamond',serif;font-weight:400;}
+.db-stat .lbl{font-size:0.68rem;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:0.1em;}
+.db-stat.green .num{color:#6aba8a;}
+.db-stat.red .num{color:#ba6a6a;}
+.db-stat.gray .num{color:var(--text2);}
+
+.db-list{display:flex;flex-direction:column;gap:6px;max-height:55vh;overflow-y:auto;padding-right:4px;}
+.db-list::-webkit-scrollbar{width:3px;}
+.db-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.db-row{background:var(--surface);border:0.5px solid var(--border);border-radius:8px;padding:0.7rem 0.9rem;display:flex;align-items:center;gap:10px;}
+.db-av{width:28px;height:28px;border-radius:50%;background:#1e1a12;border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text3);flex-shrink:0;}
+.db-info{flex:1;min-width:0;}
+.db-name{font-size:0.83rem;color:var(--text);}
+.db-detail{font-size:0.7rem;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.db-badge{font-size:0.68rem;padding:3px 9px;border-radius:20px;flex-shrink:0;}
+.db-badge.given{background:var(--given-bg);color:#6aba8a;border:0.5px solid var(--given);}
+.db-badge.notg{background:var(--notg-bg);color:#ba6a6a;border:0.5px solid var(--notg);}
+.db-badge.pend{background:var(--surface2);color:var(--text3);border:0.5px solid var(--border2);}
+
+.loading-db{text-align:center;padding:2rem;color:var(--text3);font-size:0.85rem;}
+
+/* SUCCESS */
+.sw{text-align:center;padding:4rem 1rem;}
+.sring{width:60px;height:60px;border-radius:50%;border:1px solid var(--accent);margin:0 auto 1.2rem;display:flex;align-items:center;justify-content:center;}
+.sring svg{width:24px;height:24px;stroke:var(--accent);fill:none;stroke-width:1.5;}
+.ldg{display:none;text-align:center;color:var(--text2);font-size:0.82rem;padding:0.6rem;}
+
+@media(max-width:480px){
+  .content{padding:1rem 1rem 2rem;}
+  .hdr{padding:1rem 1rem 0.7rem;}
+  .tgrid{grid-template-columns:1fr 1fr;}
+  .db-stats{grid-template-columns:repeat(3,1fr);}
+}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="screen active" id="sHome">
+  <div class="hdr">
+    <div class="hdr-logo">Anura Music Academy</div>
+    <div class="hdr-title">Merch Tracker</div>
+    <div class="hdr-sub">Teacher Distribution System</div>
+  </div>
+  <div class="content" style="padding-top:2rem;">
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('record')">Record Merch</div>
+      <div class="tab" onclick="showTab('dashboard')">Dashboard</div>
+    </div>
+    <div id="tabRecord">
+      <div class="stitle">Record a distribution</div>
+      <div class="ssub">Select a teacher to begin recording merch distribution.</div>
+      <div class="tgrid" id="homeTeacherGrid"></div>
+      <div class="btn-row">
+        <button class="btn btn-p" id="btnHomeNext" onclick="startRecord()" disabled>Start Recording →</button>
+      </div>
+    </div>
+    <div id="tabDashboard" style="display:none;">
+      <div class="stitle">Distribution status</div>
+      <div class="ssub">Select a teacher to see who has received merch.</div>
+      <div class="db-tgrid" id="dbTeacherGrid"></div>
+      <div id="dbContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- S2: STUDENT -->
+<div class="screen" id="s2">
+  <div class="hdr">
+    <div class="hdr-logo">Anura Music Academy</div>
+    <div class="hdr-title">Select Student</div>
+    <div class="hdr-sub" id="s2sub"></div>
+  </div>
+  <div class="prog"><div class="pd done"></div><div class="pd active"></div><div class="pd"></div><div class="pd"></div></div>
+  <div class="content">
+    <div class="slbl">Step 2 of 4</div>
+    <div class="stitle">Select Student</div>
+    <div class="ssub">Choose the student receiving merch.</div>
+    <input class="ssearch" type="text" placeholder="Search student..." oninput="filterS(this.value)" id="sinput"/>
+    <div class="sgrid" id="sGrid"></div>
+    <div class="btn-row">
+      <button class="btn btn-o" onclick="goHome()">← Back</button>
+      <button class="btn btn-p" id="btnS" onclick="goS(3)" disabled>Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- S3: MERCH -->
+<div class="screen" id="s3">
+  <div class="hdr">
+    <div class="hdr-logo">Anura Music Academy</div>
+    <div class="hdr-title">Record Merch</div>
+    <div class="hdr-sub" id="s3sub"></div>
+  </div>
+  <div class="prog"><div class="pd done"></div><div class="pd done"></div><div class="pd active"></div><div class="pd"></div></div>
+  <div class="content">
+    <div class="slbl">Step 3 of 4</div>
+    <div class="stitle">Record Merch</div>
+    <div class="ssub">Merch Package is auto-included. Mark each item below.</div>
+    <div id="mContainer"></div>
+    <div class="btn-row">
+      <button class="btn btn-o" onclick="goS(2)">← Back</button>
+      <button class="btn btn-p" onclick="goS(4)">Review →</button>
+    </div>
+  </div>
+</div>
+
+<!-- S4: REVIEW -->
+<div class="screen" id="s4">
+  <div class="hdr">
+    <div class="hdr-logo">Anura Music Academy</div>
+    <div class="hdr-title">Review & Submit</div>
+    <div class="hdr-sub" id="s4sub"></div>
+  </div>
+  <div class="prog"><div class="pd done"></div><div class="pd done"></div><div class="pd done"></div><div class="pd active"></div></div>
+  <div class="content">
+    <div class="slbl">Step 4 of 4</div>
+    <div class="stitle">Review & Submit</div>
+    <div class="ssub">Confirm before submitting to Google Sheet.</div>
+    <div class="scard2" id="sumBox"></div>
+    <div class="ldg" id="ldgMsg">Submitting...</div>
+    <div class="btn-row">
+      <button class="btn btn-o" onclick="goS(3)">← Back</button>
+      <button class="btn btn-p" onclick="submitRecord()" id="btnSub">Submit Record →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="screen" id="sOk">
+  <div class="content" style="display:flex;align-items:center;justify-content:center;flex:1;">
+    <div class="sw">
+      <div class="sring"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+      <div class="stitle" style="font-size:1.8rem;margin-bottom:0.4rem;">Recorded!</div>
+      <p style="color:var(--text2);font-size:0.85rem;" id="okMsg"></p>
+      <button class="btn btn-o" style="margin-top:1.8rem;" onclick="goHome()">← Back to Home</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SHEET='https://script.google.com/macros/s/AKfycbzYiSZbgy6TVCKcXh68KRenwKuqYGf7chwdtLlBqV47GYbFzz_V92b513gW3VP2QfLd/exec';
+function img(id){return `https://drive.google.com/thumbnail?id=${id}&sz=w200`;}
+
+const TEACHERS=[
+  {id:'bella',name:'Baigalaa Bella',role:'Piano Instructor',students:['Anu Delgertamir','Anujin Batmunkh','Bilguun Batkhishig','Breanna Nominjin Tulga','Emulun Bulgantamir','Erdem Dulguun','Esu Naranbaatar','Goodali Erdenebaatar','Kevin Enkhtaivan','Logan Irmuun Batsukh','Mason Chinbat Margad','Michelle Duurenbayar','Michelle Scharf','Murun Bilegdemberel','Namuun Ganbat','Nandin Nasankhuu','Nicole Enkhjin Byambajargal','Oyundari Enkhbayar','Oyungoo Ayurzana','Sarnai Dul','Sonia Battumur','Sophia Margad Ochirbat','Tankhiluun Springirth','Temujin Dashzegve','Temuun Tuguldur','Tsakhirmaa Erdenebaatar','Valerie Seminario']},
+  {id:'khatan',name:'Khatanbold Urlagbaatar',role:'President / Morin Khuur',students:['Aizam Hugjilt','Amgalan Nasankhuu','Anard Batmergen','Asher Enkhmandal','Ayalguu Ankhbayar','Bilguun Munkhdelger','Buyannemekh Otgonbold','Chinbileg Amarsanaa','Clifford Chingun Hobbs Jr','Dashdemberel Dugarsuren','Erkhem Nyamgarav','Evelyn Byamba-Ochir','Jake Nergui','Jonathan Tergel Chuluunbat','Mandal Tsolmon','Marcella Duurenbayar','Marcus Suld Uuganjargal','Michael Tungalag','Murun Sainbayar','Odbayar Tserennyam','Robert Richardson','Sengum Ochirbat','Suld Sedeekhuu','Telmuun Zolboo','Tselmuun Munkhbayar','Tsolmon n','Tuguldur Tugsjargal','Ulziikhuyag Dashn']},
+  {id:'marla',name:'Marla Eric',role:'Piano Instructor',students:['Adelaide Flinn','Anungoo Erdenebaatar','Ariungoo Battulga','Athan Foley','Bujedmaa Zolzaya','Clive Lee Richardson','Dulguun Sainbayar','Egshiglen Batbayar','Emily Denison','Enkhjin Bayartsengel','Enkhjin Chuluunbaatar','Indra Mandalbayar','Iveel Ankhbayar','Khadaan Dashzevge','Khan-Orgil Chinguun','Leonardo Camacho','Michidmaa Battulga','Misheel Tserennyam','Nandin Erdene-Ochir','Nandin Galbadrakh','Od Batdelger','Sayana Hobbs Jr','Sondor Ganbat','Sophia Tamiraa','Tengis Ganbat','Tselmuun Bulgantamir','Tsogzolmaa Amarsanaa','William Bayardorj Munkhbaatar']},
+  {id:'mona',name:'Mona Nara',role:'Piano Instructor',students:['Amarlin Ankhbayar','Anand Tumenjargal','Angel Enkhtur','Anu Munkhzol','Badruun Rentsen-Ochir','Carl Nasandelger','Delgermurun Manaljav','Egshiglen Munkhzaya','Elisa Zolboo','Ella Solmaz','Enerel Enkhbayar','Erdene Galbadrakh','Kevin Dulbadrakh Dulguun','Lilium Saraana Bartlett','Manlai Dul','Martino Nionelli Morillo','Michelle Margad','Mungun Ulziibayar','Narangoo Batmergen','Nomundari Ganzorig','Temuulen Tuguldur','Tugs-Oyu Batmergen','Urangoo Munkh-Od']},
+  {id:'nobi',name:'Nobi Bayar',role:'Morin Khuur',students:['Amina Shirnen','Enkhjin Chuluunbaatar','Ermuun Dolgor','Skyler Rosso','Yesun-Erdene Felix Purevdorj']},
+  {id:'ochirbat',name:'Ochirbat Munkh',role:'Morin Khuur',students:['Aj Saikhanjargal','Anar Ganbat','Bella Iveel Zolboo','Bilegsaikhan Buyantogtokh','Bilguun Dashdondog','Burenkhuslen Boldbaatar','Burentugs Munkhzaya','Enguun Enkhbat','Erkhembayar Nyamsuren','Erkhembileg Buhbayar','Irmuun Bayarsaikhan','Jacob Borodyonok','Jayson Borodyonok','Jiguur Bayarbat','Michael Enkhbold','Misheel Batdelger','Namulun Enkhtaivan','Todbayar Nandinjargal','William McKnight']},
+  {id:'suzy',name:'Suzy S',role:'Piano Instructor',students:['Anujin Tserennyam','Ava Uujim Kum','Battuvshin Oyunbold','Brianna Iveelen McKnight','Charles Anar Uuganjargal','Elsa Ochbold','Emily Emujin Byamba-Ochir','Enkhjin Ankhbayar','Erhem Khosbayar','Ezlen Naranbaatar','Gegeen Enkhbayar','Gumuda Batdelger','Hangai Dashdendev','Maaya Odbayar','Maria Jose Morillo','Maya Batbayar','Nomunsetsen Erdenebold','Rozi Qena','Temuulen Tugsbayar','Yesugen Temuujin','Yesuijin Batmunkh','Yesujin Temuujin']}
+];
+
+const MERCH=[
+  {id:'pkg',name:'Merch Package',pkg:true,sizes:[],imgId:'1OzroKvEejItkYGLkKgntFsSGA2khg5DG',cat:'Package'},
+  {id:'sticker',name:'Sticker Pack',pkg:false,sizes:[],imgId:'1IB0WYXz8At87Q9qNqzeYQF2Jj8GqMHCY',cat:'Accessories'},
+  {id:'tote',name:'Tote Bag',pkg:false,sizes:[],imgId:'1y1mo1MS5WdoPN2AIPZfoFfevyJ1socCM',cat:'Accessories'},
+  {id:'mug',name:'Coffee Mug',pkg:false,sizes:[],imgId:'1ND1KyEyB4DvATzL5n0lX4IGXfcDCit2X',cat:'Accessories'},
+  {id:'bottle',name:'Water Bottle',pkg:false,sizes:[],imgId:'1eoQHXPYLri_cq51Gf6nqQPFQ6-cROKaU',cat:'Accessories'},
+  {id:'binder',name:'Note Binder',pkg:false,sizes:[],imgId:'19qwVLLhHIympvubAxy_wsKMgrxY5yGdr',cat:'Stationery'},
+  {id:'nb_black',name:'Black Notebook Set',pkg:false,sizes:[],imgId:'1dPpn7NGEi9XdYB_7Qj-XeaBALmoBuy1F',cat:'Stationery'},
+  {id:'nb_blue',name:'Blue Notebook Set',pkg:false,sizes:[],imgId:'1tdXBahfyb9e2CKkA_cV2-Cq4X_D7NMRS',cat:'Stationery'},
+  {id:'music_pink',name:'Pink Music Book',pkg:false,sizes:[],imgId:'13DBxLiS_BoPaeEEWQNk8R6O31YReMyQU',cat:'Stationery'},
+  {id:'music_blue',name:'Blue Music Book',pkg:false,sizes:[],imgId:'1q-wDRfwrRpd19s8kKDFEPPTbDDe_-d-U',cat:'Stationery'},
+  {id:'polo_black',name:'Black Polo',pkg:false,sizes:['S','M','L'],imgId:'1yMPPtW4VvBBrHWRP1JtgtAVVnuc0FSW4',cat:'Polo Shirt'},
+  {id:'polo_orange',name:'Orange Polo',pkg:false,sizes:['S','M','L'],imgId:'1vTwpQEtTxFZnGt8JrxrmOuVZ6wC5Vn4L',cat:'Polo Shirt'},
+  {id:'polo_white',name:'White Polo',pkg:false,sizes:['M'],imgId:'1wuibS9-gV_FxHBQreF5EC34S0l514-CH',cat:'Polo Shirt'},
+  {id:'virtoso',name:'Virtoso T-Shirt',pkg:false,sizes:['S','M','L','XL','2XL','3XL'],imgId:'158Hd94ToLhJL5Va7kqSrioZnKAKvmKKJ',cat:'T-Shirt'},
+  {id:'maestro',name:'Maestro T-Shirt',pkg:false,sizes:['S','L','3XL'],imgId:'1rh3vsUcKBTxtJmT-a3I0bi3jo_H5g2uO',cat:'T-Shirt'},
+  {id:'better',name:'Better T-Shirt',pkg:false,sizes:['M','L'],imgId:'1u_HddAm5gvXlYkziqyC38dn3EKEO8K0B',cat:'T-Shirt'},
+  {id:'black_uni',name:'Black Uniform',pkg:false,sizes:['S','M','L','XL','Kids XL','Kids 2XL','Kids 3XL'],imgId:'17--1qw4XKfI-ti_xmRanTEihnQoq9P72',cat:'Uniform'},
+  {id:'white_uni',name:'White Uniform',pkg:false,sizes:['S','M','L','XL','2XL','3XL'],imgId:'1G3Wfbm-5nLKz6_nrqTWL6s-mys8PuypU',cat:'Uniform'},
+  {id:'red_h',name:'Red Hoodie',pkg:false,sizes:['S','M','L','XL'],imgId:'1fkyRImd8g--sGpuxFlw48hRUtG33gX4s',cat:'Hoodie'},
+  {id:'gray_h',name:'Gray Hoodie',pkg:false,sizes:['S','M','L','XL'],imgId:'1JklaW0E_afwdkk5EPKD_PjwFKgOgu3gw',cat:'Hoodie'},
+  {id:'black_h',name:'Black Hoodie',pkg:false,sizes:['S','M','L','XL'],imgId:'1NgYBIUxj86e4Z9Ihgx9iqMwzHz0U6cfo',cat:'Hoodie'},
+];
+
+let st={teacher:null,student:null,merch:{}};
+let selectedHomeTeacher=null;
+let selectedDbTeacher=null;
+let sheetData=[];
+
+function initHome(){
+  document.getElementById('homeTeacherGrid').innerHTML=TEACHERS.map(t=>
+    `<div class="tcard" onclick="selHomeT('${t.id}')" id="htc_${t.id}">
+      <h3>${t.name}</h3><p>${t.role}</p>
+      <div class="cnt">${t.students.length} students</div>
+    </div>`).join('');
+  document.getElementById('dbTeacherGrid').innerHTML=TEACHERS.map(t=>
+    `<div class="db-tc" onclick="selDbT('${t.id}')" id="dbtc_${t.id}">
+      <h3>${t.name}</h3><p>${t.role}</p>
+    </div>`).join('');
+}
+
+function showTab(tab){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='record'?0:1)));
+  document.getElementById('tabRecord').style.display=tab==='record'?'block':'none';
+  document.getElementById('tabDashboard').style.display=tab==='dashboard'?'block':'none';
+  if(tab==='dashboard') loadSheetData();
+}
+
+function selHomeT(id){
+  selectedHomeTeacher=id;
+  document.querySelectorAll('.tcard').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('htc_'+id).classList.add('sel');
+  document.getElementById('btnHomeNext').disabled=false;
+}
+
+function startRecord(){
+  st.teacher=selectedHomeTeacher;
+  st.student=null;
+  st.merch={};
+  goS(2);
+}
+
+function goHome(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sHome').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goS(n){
+  document.querySelectorAll('.screen').forEach((s,i)=>s.classList.toggle('active',i===n-1));
+  if(n===2) initS();
+  if(n===3) initM();
+  if(n===4) buildSum();
+  window.scrollTo(0,0);
+}
+
+function initS(){
+  const t=TEACHERS.find(t=>t.id===st.teacher);
+  document.getElementById('s2sub').textContent=t.name+' — '+t.students.length+' students';
+  document.getElementById('sinput').value='';
+  renderS(t.students);
+}
+
+function renderS(list){
+  document.getElementById('sGrid').innerHTML=list.map(s=>{
+    const ini=s.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return `<div class="scard ${st.student===s?'sel':''}" onclick="selS('${s.replace(/'/g,"\\'")}',this)">
+      <div class="av">${ini}</div><span>${s}</span>
+    </div>`;
+  }).join('');
+}
+
+function filterS(q){
+  const t=TEACHERS.find(t=>t.id===st.teacher);
+  renderS(q?t.students.filter(s=>s.toLowerCase().includes(q.toLowerCase())):t.students);
+}
+
+function selS(name,el){
+  st.student=name;
+  document.querySelectorAll('.scard').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('btnS').disabled=false;
+}
+
+function initM(){
+  const t=TEACHERS.find(t=>t.id===st.teacher);
+  document.getElementById('s3sub').textContent=st.student+' — '+t.name;
+  const cats=['Package','Accessories','Stationery','Polo Shirt','T-Shirt','Uniform','Hoodie'];
+  document.getElementById('mContainer').innerHTML=cats.map(cat=>{
+    const items=MERCH.filter(m=>m.cat===cat);
+    return `<div class="mcat">
+      <div class="mcat-t">${cat}</div>
+      <div class="mlist">${items.map(m=>renderM(m)).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderM(m){
+  const s=st.merch[m.id];
+  const cls=m.pkg?'pkg':(s?(s.given?'given':'notg'):'');
+  const stat=m.pkg?'✓ Included for all students':(s?(s.given?'✓ Given'+(s.size?' — '+s.size:''):'✗ Not given'):'');
+  const szHtml=m.sizes.length&&!m.pkg?`<div class="srow"><div class="slb">Select size:</div><div class="sbts">${m.sizes.map(sz=>`<div class="sbt ${s&&s.size===sz?'sel':''}" onclick="selSz('${m.id}','${sz}')">${sz}</div>`).join('')}</div></div>`:'';
+  const btns=m.pkg?'':`<div class="mbtns"><button class="bg" onclick="markM('${m.id}',true)">Given</button><button class="bn" onclick="markM('${m.id}',false)">Not Given</button>${s?`<button class="bc" onclick="clrM('${m.id}')">—</button>`:''}</div>`;
+  return `<div class="mitem ${cls}" id="mi_${m.id}">
+    <div class="minner">
+      <img class="mimg" src="${img(m.imgId)}" onerror="this.style.display='none';this.nextSibling.style.display='flex';">
+      <div class="mph" style="display:none;">📦</div>
+      <div class="minfo"><div class="mname">${m.name}${m.pkg?'<span class="pkgbdg">Auto</span>':''}</div><div class="mstat">${stat}</div></div>
+      ${btns}
+    </div>${szHtml}
+  </div>`;
+}
+
+function markM(id,given){if(!st.merch[id])st.merch[id]={};st.merch[id].given=given;refreshM(id);}
+function clrM(id){delete st.merch[id];refreshM(id);}
+function selSz(id,size){if(!st.merch[id])st.merch[id]={given:true};st.merch[id].size=size;refreshM(id);}
+function refreshM(id){const m=MERCH.find(m=>m.id===id);const el=document.getElementById('mi_'+id);if(el)el.outerHTML=renderM(m);}
+
+function buildSum(){
+  const t=TEACHERS.find(t=>t.id===st.teacher);
+  document.getElementById('s4sub').textContent=st.student+' — '+t.name;
+  const given=MERCH.filter(m=>!m.pkg&&st.merch[m.id]&&st.merch[m.id].given);
+  const notg=MERCH.filter(m=>!m.pkg&&st.merch[m.id]&&!st.merch[m.id].given);
+  const pend=MERCH.filter(m=>!m.pkg&&!st.merch[m.id]);
+  document.getElementById('sumBox').innerHTML=`
+    <div class="sr"><span class="sl">Teacher</span><span class="sv">${t.name}</span></div>
+    <div class="sr"><span class="sl">Student</span><span class="sv">${st.student}</span></div>
+    <div class="sr"><span class="sl">Date</span><span class="sv">${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span></div>
+    <div class="sr"><span class="sl">Merch Package</span><span class="sv" style="color:#6aaaba;">✓ Included</span></div>
+    <div class="si">
+      ${given.length?`<div class="ss">Given (${given.length})</div>${given.map(m=>`<div class="sg">✓ ${m.name}${st.merch[m.id].size?' — '+st.merch[m.id].size:''}</div>`).join('')}`:''}
+      ${notg.length?`<div class="ss">Not Given (${notg.length})</div>${notg.map(m=>`<div class="sng">✗ ${m.name}</div>`).join('')}`:''}
+      ${pend.length?`<div class="ss" style="color:#3a3a3a;">Not recorded (${pend.length})</div>`:''}
+    </div>`;
+}
+
+async function submitRecord(){
+  const t=TEACHERS.find(t=>t.id===st.teacher);
+  const given=MERCH.filter(m=>m.pkg||(st.merch[m.id]&&st.merch[m.id].given))
+    .map(m=>m.name+(st.merch[m.id]&&st.merch[m.id].size?' ('+st.merch[m.id].size+')':'')).join(', ');
+  const notg=MERCH.filter(m=>!m.pkg&&st.merch[m.id]&&!st.merch[m.id].given).map(m=>m.name).join(', ');
+  const payload={timestamp:new Date().toLocaleString('en-US'),teacher:t.name,student:st.student,parent:'',email:'',items:given||'—',notes:notg?'Not given: '+notg:''};
+  document.getElementById('btnSub').disabled=true;
+  document.getElementById('ldgMsg').style.display='block';
+  try{await fetch(SHEET,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});}catch(e){}
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sOk').classList.add('active');
+  document.getElementById('okMsg').textContent=st.student+' — merch record saved successfully.';
+}
+
+// DASHBOARD
+function selDbT(id){
+  selectedDbTeacher=id;
+  document.querySelectorAll('.db-tc').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('dbtc_'+id).classList.add('sel');
+  renderDashboard(id);
+}
+
+async function loadSheetData(){
+  if(sheetData.length>0){if(selectedDbTeacher)renderDashboard(selectedDbTeacher);return;}
+  document.getElementById('dbContent').innerHTML='<div class="loading-db">Loading data...</div>';
+  try{
+    const r=await fetch(SHEET,{method:'GET',mode:'cors'});
+    const d=await r.json();
+    if(d.status==='success') sheetData=d.data||[];
+    if(selectedDbTeacher) renderDashboard(selectedDbTeacher);
+    else document.getElementById('dbContent').innerHTML='';
+  }catch(e){
+    document.getElementById('dbContent').innerHTML='<div class="loading-db">Could not load data. Try again.</div>';
+  }
+}
+
+function renderDashboard(teacherId){
+  const t=TEACHERS.find(t=>t.id===teacherId);
+  const teacherRecords=sheetData.filter(r=>r.teacher===t.name);
+  const recordedStudents=new Set(teacherRecords.map(r=>r.student));
+  const given=t.students.filter(s=>recordedStudents.has(s));
+  const notRecorded=t.students.filter(s=>!recordedStudents.has(s));
+
+  document.getElementById('dbContent').innerHTML=`
+    <div class="db-stats">
+      <div class="db-stat green"><div class="num">${given.length}</div><div class="lbl">Given</div></div>
+      <div class="db-stat red"><div class="num">${notRecorded.length}</div><div class="lbl">Pending</div></div>
+      <div class="db-stat gray"><div class="num">${t.students.length}</div><div class="lbl">Total</div></div>
+    </div>
+    <div class="db-list">
+      ${t.students.map(s=>{
+        const rec=teacherRecords.filter(r=>r.student===s).pop();
+        const ini=s.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        if(rec){
+          return `<div class="db-row">
+            <div class="db-av" style="border-color:var(--given);color:#6aba8a;">${ini}</div>
+            <div class="db-info"><div class="db-name">${s}</div><div class="db-detail">${rec.timestamp||''}</div></div>
+            <div class="db-badge given">✓ Given</div>
+          </div>`;
+        } else {
+          return `<div class="db-row">
+            <div class="db-av">${ini}</div>
+            <div class="db-info"><div class="db-name">${s}</div><div class="db-detail">Not yet recorded</div></div>
+            <div class="db-badge pend">Pending</div>
+          </div>`;
+        }
+      }).join('')}
+    </div>`;
+}
+
+initHome();
+</script>
+</body>
+</html>
